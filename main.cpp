@@ -5,7 +5,7 @@ using namespace std;
 
 class fibonacciHeap
 {
-public:
+private:
     int max_deg;
     struct node
     {
@@ -17,50 +17,9 @@ public:
         node *child;
         node *parent;
     };
-node* minNode;
-    fibonacciHeap()
-    {
-        max_deg = 0;
-        minNode = nullptr;
-    }
-    void insertElement(int val)
-    {
-        max_deg = max(max_deg, 1);
-        node* temp = new node;
-        temp->val = val;
-        temp->right = temp;
-        temp -> left = temp;
-        temp->degree = 0;
-        temp->marked = false;
-        temp->child = nullptr;
-        temp->parent = nullptr;
-        if (minNode == nullptr)
-            minNode = temp;
-        else
-        {
-            temp->right = minNode -> right;
-            minNode->right = temp;
-            temp->left = minNode;
-            temp -> right -> left = temp;
-            if (temp->val < minNode -> val)
-                minNode = temp;
-        }
-        
-    }
-    void unionHeap(fibonacciHeap oth)
-    {
-        max_deg = max(max_deg, oth.max_deg);
-        node* temp1;
-        node* temp2;
-        temp1 = minNode ->right;
-        temp2 = oth.minNode -> left;
-        minNode -> right = oth.minNode;
-        temp2 -> right = temp1;
-        temp1 -> left = temp2;
-        oth.minNode -> left = minNode;
-        //oth.~fibonacciHeap();
-    }
-
+    vector<pair<int, node*>> adres[100000]; //ca sa marcam elementele ca sterse
+    node* minNode;
+    
     node* uniteTree(node* node1, node* node2)
     {
         if (node1 -> val > node2 -> val)
@@ -91,7 +50,7 @@ node* minNode;
         }
         return node1;
     }
-    
+
     void deleteNode(node* nod)
     {
 
@@ -189,9 +148,97 @@ node* minNode;
             temp = temp->right;
             while (lista[aux->degree] != nullptr)
             {
-
+                aux = uniteTree(aux, lista[aux->degree]);
+                lista[aux->degree - 1] = nullptr;
             }
+            lista[aux->degree] = aux;
         }
+    }
+
+
+public:
+   
+    fibonacciHeap()
+    {
+        max_deg = 0;
+        minNode = nullptr;
+    }
+    void insertElement(int val)
+    {
+        max_deg = max(max_deg, 1);
+        node* temp = new node;
+        int val_aux = val % 100000;
+        adres[val_aux].push_back(make_pair(val, temp));
+        temp->val = val;
+        temp->right = temp;
+        temp -> left = temp;
+        temp->degree = 0;
+        temp->marked = false;
+        temp->child = nullptr;
+        temp->parent = nullptr;
+        if (minNode == nullptr)
+            minNode = temp;
+        else
+        {
+            temp->right = minNode -> right;
+            minNode->right = temp;
+            temp->left = minNode;
+            temp -> right -> left = temp;
+            if (temp->val < minNode -> val)
+                minNode = temp;
+        }
+        
+    }
+    void unionHeap(fibonacciHeap oth)
+    {
+        max_deg = max(max_deg, oth.max_deg);
+        node* temp1;
+        node* temp2;
+        temp1 = minNode ->right;
+        temp2 = oth.minNode -> left;
+        minNode -> right = oth.minNode;
+        temp2 -> right = temp1;
+        temp1 -> left = temp2;
+        oth.minNode -> left = minNode;
+        oth.~fibonacciHeap();
+    }
+
+    void deleteMin()
+    {
+        if (minNode == nullptr)
+            return;
+        while (minNode->marked == true)
+        {
+            deleteNode(minNode);
+            if (minNode == nullptr)
+                return ;
+        }
+        int ans = minNode->val;
+        deleteNode(minNode);
+        if (minNode != nullptr)
+            consolidate();
+    }
+
+    void deleteElement(int val)
+    {
+        int aux_val = val % 100000;
+        for (auto &it: adres[aux_val])
+            if (it.first == val)
+                it.second->marked = true;
+        
+    }
+
+    int getMin()
+    {
+        if(minNode == nullptr)
+            return -1;
+        while (minNode -> marked == true)
+        {
+            deleteNode(minNode);
+        }
+        if(minNode == nullptr)
+            return -1;
+        return minNode->val;
     }
 
     void display()
@@ -200,7 +247,7 @@ node* minNode;
             cout << minNode->val<<" ";
         else
         {
-            cout<<"gol io";
+            cout<<"gol";
             return;
         }
         node* temp = minNode -> right;
@@ -213,22 +260,34 @@ node* minNode;
     }
 };
 
+void solve()
+{
+    ifstream f("input.in");
+    ofstream g("output.txt");
+    fibonacciHeap heap;
+    int n;
+    int op, nr;
+    f >> n;
+    for (int i = 1; i <= n; i++)
+    {
+        f >> op;
+        if (op == 1)
+            f>>nr, heap.insertElement(nr);
+        if (op == 2)
+            f>>nr, heap.deleteElement(nr);
+        if  (op == 3)
+            g<< heap.getMin() <<"\n";
+        if (op == 4)
+            heap.deleteMin();
+    }
+}
+
 
 int main()
 {
-    fibonacciHeap h1;
-    h1.insertElement(5);
-    h1.insertElement(3);
-    h1.insertElement(4);
-    h1.insertElement(1);
-    h1.uniteTree(h1.minNode, h1.minNode->right);
-    h1.uniteTree(h1.minNode ->right, h1.minNode->right->right);
-    h1.uniteTree(h1.minNode, h1.minNode->right);
-    h1.deleteNode(h1.minNode);
-    h1.deleteNode(h1.minNode);
-    h1.deleteNode(h1.minNode);
-    h1.deleteNode(h1.minNode);
-    h1.display();
 
+    solve();
+    
+    
     return 0;
 }
