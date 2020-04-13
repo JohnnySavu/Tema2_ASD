@@ -73,14 +73,14 @@ private:
         //find the minimum on the other trees
             temp = nod->right;
             minTemp = temp;
-             //cout<<"yolo";
+            
             while (temp != nod)
             {
                 if (temp->val < minTemp ->val)
                     minTemp = temp;
                 temp = temp->right;
             }
-             //cout<<"yolo";
+            
         }
         
         if (nod -> child == nullptr)
@@ -99,7 +99,7 @@ private:
             if (minTemp -> val > nod->child->val)
                 minTemp = nod->child;
             //taking care of the min also.
-            //cout<<"yolo";
+            
             while (temp != nod->child)
             {
                 if (minTemp -> val > temp ->val)
