@@ -11,13 +11,12 @@ private:
     {
         int val;
         int degree;
-        bool marked;
         node* left;
         node *right;
         node *child;
         node *parent;
     };
-    vector<pair<int, node*>> adres[100000]; //ca sa marcam elementele ca sterse
+    priority_queue <int> del; // for the deletion
     node* minNode;
     
     node* uniteTree(node* node1, node* node2)
@@ -167,13 +166,10 @@ public:
     {
         max_deg = max(max_deg, 1);
         node* temp = new node;
-        int val_aux = val % 100000;
-        adres[val_aux].push_back(make_pair(val, temp));
         temp->val = val;
         temp->right = temp;
         temp -> left = temp;
         temp->degree = 0;
-        temp->marked = false;
         temp->child = nullptr;
         temp->parent = nullptr;
         if (minNode == nullptr)
@@ -205,36 +201,47 @@ public:
 
     void deleteMin()
     {
-        if (minNode == nullptr)
-            return;
-        while (minNode->marked == true)
+        if(minNode == nullptr)
+            return ;
+        if (!del.empty())
         {
-            deleteNode(minNode);
-            if (minNode == nullptr)
-                return ;
+            while (minNode -> val == -del.top())
+            {
+                deleteNode(minNode);
+                if (minNode != nullptr)
+                    consolidate();
+                del.pop();
+                if (del.empty())
+                    break;
+            }
         }
         int ans = minNode->val;
-        deleteNode(minNode);
+        if (minNode != nullptr)
+            deleteNode(minNode);
         if (minNode != nullptr)
             consolidate();
     }
 
     void deleteElement(int val)
     {
-        int aux_val = val % 100000;
-        for (auto &it: adres[aux_val])
-            if (it.first == val)
-                it.second->marked = true;
-        
+        del.push(-val);
     }
 
     int getMin()
     {
         if(minNode == nullptr)
             return -1;
-        while (minNode -> marked == true)
+        if (!del.empty())
         {
-            deleteNode(minNode);
+            while (minNode -> val == -del.top())
+            {
+                deleteNode(minNode);
+                if (minNode != nullptr)
+                    consolidate();
+                del.pop();
+                if (del.empty())
+                    break;
+            }
         }
         if(minNode == nullptr)
             return -1;
